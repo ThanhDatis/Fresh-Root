@@ -1,0 +1,40 @@
+# =============================================
+# Root .gitignore — FreshRoot Monorepo
+# =============================================
+
+# Dependencies — tất cả services
+**/node_modules/
+
+# Environment variables — KHÔNG BAO GIỜ commit
+**/.env
+**/.env.local
+**/.env.*.local
+
+# Build outputs
+**/dist/
+**/build/
+**/.next/
+**/out/
+
+# Docker override (config local không cần commit)
+docker-compose.override.yml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Logs
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+
+# Coverage
+**/coverage/
