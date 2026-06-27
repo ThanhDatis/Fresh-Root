@@ -16,11 +16,16 @@
     "@mui/icons-material": "^9.0.1",
     "@mui/material": "^9.0.1",
     "@mui/material-nextjs": "^9.0.1",
+    "@mui/x-data-grid": "^9.7.0",
+    "@mui/x-date-pickers": "^9.7.0",
     "axios": "^1.16.1",
+    "dayjs": "^1.11.21",
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4",
+    "react-dropzone": "^15.0.0",
     "react-hook-form": "^7.76.1",
+    "recharts": "^3.9.0",
     "zod": "^4.4.3",
     "zustand": "^5.0.13"
   },
@@ -32,6 +37,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-import": "^2.32.0",
     "prettier": "^3.8.3",
     "typescript": "^5"
   }
