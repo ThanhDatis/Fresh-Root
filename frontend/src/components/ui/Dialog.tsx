@@ -70,11 +70,15 @@ export default function Dialog({
         <DialogTitle sx={{ p: 0 }}>
           <Stack
             direction="row"
-            alignItems="center"
-            justifyContent="space-between"
-            sx={{ pl: 3, pr: 1.5, py: 1.5 }}
+            sx={{
+              pl: 3,
+              pr: 1.5,
+              py: 1.5,
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
           >
-            <Typography variant="h6" component="span" fontWeight={600}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
               {title}
             </Typography>
             {!hideCloseButton && (

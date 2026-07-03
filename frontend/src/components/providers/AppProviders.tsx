@@ -1,8 +1,9 @@
-"use client";
+'use client';
 
-import { ThemeProvider } from "@mui/material/styles";
-import CssBaseline from "@mui/material/CssBaseline";
-import theme from "@/lib/theme/theme";
+import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider } from '@mui/material/styles';
+
+import theme from '@/app/lib/theme/theme';
 
 export default function AppProviders({
   children,

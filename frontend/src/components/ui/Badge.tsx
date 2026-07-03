@@ -25,7 +25,6 @@ const BADGE_CONFIG: Record<
 
 /**
  * Badge — dùng để gắn nhãn sản phẩm (Mới, Giảm giá, Bán chạy, Hết hàng).
- * Wrapper của MuiChip với preset variants sẵn cho FreshRoot.
  * Theme đã set: fontWeight 600, borderRadius 8px, text căn giữa.
  *
  * @example

@@ -3,11 +3,8 @@ import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 
 export interface CardProps extends MuiCardProps {
-  /** Nội dung bên trong card */
   children: React.ReactNode;
-  /** Khi truyền vào, toàn bộ card sẽ clickable (dùng cho ProductCard, BlogCard) */
   onClick?: () => void;
-  /** Bỏ padding mặc định của CardContent — dùng khi cần layout custom (ảnh full-bleed) */
   disablePadding?: boolean;
 }
 

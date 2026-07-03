@@ -11,13 +11,9 @@ export type AvatarSize = 'small' | 'medium' | 'large' | number;
 export type AvatarStatus = 'online' | 'offline' | 'busy' | 'away';
 
 export interface AvatarProps extends Omit<MuiAvatarProps, 'children'> {
-  /** URL ảnh đại diện */
   src?: string;
-  /** Tên dùng để tạo chữ viết tắt khi không có ảnh (vd: "Nguyễn Văn A" -> "NA") */
   name?: string;
-  /** Kích thước avatar: preset hoặc số px tuỳ chỉnh */
   size?: AvatarSize;
-  /** Chấm trạng thái ở góc dưới phải (online/offline/busy/away) */
   status?: AvatarStatus;
 }
 
@@ -59,8 +55,7 @@ const StatusBadge = styled(Badge, {
 /**
  * Avatar dùng chung cho toàn app.
  * - Có ảnh -> hiển thị ảnh
- * - Không có ảnh -> hiển thị chữ viết tắt từ `name`, nền theo màu primary (sage)
- * - `status` -> hiển thị chấm tròn trạng thái (dùng cho admin/customer online status,...)
+ * - Không có ảnh -> hiển thị chữ viết tắt từ `name`, nền theo màu primary
  */
 export default function Avatar({
   src,

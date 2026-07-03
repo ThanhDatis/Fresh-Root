@@ -26,13 +26,11 @@ export default function Skeleton({
 /* ---------------------------------------------------------------------- */
 
 export interface SkeletonTextProps {
-  /** Số dòng text */
   lines?: number;
-  /** Width tuỳ chỉnh cho từng dòng (mặc định dòng cuối ngắn hơn) */
   width?: (string | number)[];
 }
 
-/** Nhiều dòng text đang load — dùng cho mô tả sản phẩm, bài blog,... */
+/** Nhiều dòng text đang load */
 export function SkeletonText({ lines = 3, width }: SkeletonTextProps) {
   return (
     <Stack spacing={0.75}>
@@ -47,12 +45,10 @@ export function SkeletonText({ lines = 3, width }: SkeletonTextProps) {
   );
 }
 
-/** Avatar tròn đang load — dùng cho review, comment, customer table */
 export function SkeletonAvatar({ size = 40 }: { size?: number }) {
   return <Skeleton variant="circular" width={size} height={size} />;
 }
 
-/** Skeleton cho ProductCard: ảnh + tên + giá — dùng khi đang fetch danh sách sản phẩm */
 export function SkeletonProductCard() {
   return (
     <Box sx={{ width: '100%' }}>
@@ -63,7 +59,6 @@ export function SkeletonProductCard() {
   );
 }
 
-/** Một hàng skeleton cho table (Admin: Product/Order/Customer table) */
 export function SkeletonTableRow({ columns = 5 }: { columns?: number }) {
   return (
     <Stack direction="row" spacing={2} sx={{ py: 1.5, width: '100%' }}>
