@@ -26,6 +26,9 @@ frontend/
 ├── src/
 │   ├── app/                            # Next.js App Router — File-based routing
 │   │   ├── layout.tsx                  # Root layout
+|   |   ├── error.tsx                   # error cho /app
+|   |   ├── loading.tsx                 # loading cho /app
+|   |   ├── not-found.tsx               # not-found cho /app
 │   │   ├── (storefront)/               # Route group: Storefront
 │   │   │   ├── layout.tsx              # Storefront layout (Navbar, Footer)
 │   │   │   ├── page.tsx                # Home page
@@ -52,6 +55,8 @@ frontend/
 │   │   │
 │   │   ├── (admin)/                    # Route group: Admin Dashboard
 │   │   │   ├── layout.tsx              # Admin layout (Sidebar, Header)
+│   │   │   ├── loading.tsx             # loading cho admin
+│   │   │   ├── error.tsx               # error cho admin
 │   │   │   ├── dashboard/
 │   │   │   │   ├── page.tsx
 │   │   │   │   └── _hooks/
@@ -72,14 +77,17 @@ frontend/
 │   │   │   │   ├── page.tsx
 │   │   │   │   └── _hooks/
 │   │   │   │       └── useCustomersPage.ts
-|   |   |   ├── analytics/              # ← THÊM MỚI
+|   |   |   ├── analytics/              
 │   │   |   |   ├── page.tsx
 │   │   |   |   └── _hooks/
 │   │   |   |       └── useAnalyticsPage.ts
 │   │   │   └── settings/
 │   │   │       └── page.tsx
+│   │   |   |   └── _hooks/
+│   │   |   |       └── useSetting.ts
 │   │   │
 │   │   └── (auth)/                     # Route group: Auth
+│   │       ├── layout.tsx              # Layout riêng cho login/register
 │   │       ├── login/
 │   │       │   └── page.tsx
 │   │       └── register/
@@ -161,8 +169,8 @@ frontend/
 │       ├── dateTime.ts                 # formatDate()
 │       └── string.ts                   # slugify(), truncate()
 │
+├── proxy.ts                            # Middleware chặn/redirect trước khi vào root, phân quyền Admin
 ├── next.config.ts
-├── tailwind.config.ts                  # Nếu dùng thêm Tailwind
 ├── tsconfig.json
 ├── eslint.config.js
 ├── .env.example
