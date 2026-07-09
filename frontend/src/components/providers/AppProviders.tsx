@@ -5,6 +5,8 @@ import { ThemeProvider } from '@mui/material/styles';
 
 import theme from '@/app/lib/theme/theme';
 
+import ToastMessage from '../shared/ToastMessage';
+
 export default function AppProviders({
   children,
 }: {
@@ -14,6 +16,7 @@ export default function AppProviders({
     <ThemeProvider theme={theme}>
       <CssBaseline />
       {children}
+      <ToastMessage />
     </ThemeProvider>
   );
 }
