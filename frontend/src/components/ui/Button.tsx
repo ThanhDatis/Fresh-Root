@@ -26,6 +26,7 @@ export default function Button({
           startIcon
         )
       }
+      endIcon={loading ? null : props.endIcon}
       {...props}
     >
       {children}
