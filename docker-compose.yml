@@ -1,0 +1,35 @@
+services:
+  mongo:
+    image: mongo:7
+    container_name: freshroot-mongo
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - freshroot-network
+    # KHÔNG expose port ra host
+
+  auth-service:
+    build: ./auth-service
+    container_name: freshroot-auth-service
+    restart: unless-stopped
+    env_file: ./auth-service/.env
+    environment:
+      # Override MONGO_URI để trỏ vào hostname nội bộ của container mongo
+      # (không dùng "localhost" vì auth-service chạy trong container riêng)
+      - MONGO_URI=mongodb://mongo:27017/freshroot_auth
+    ports:
+      - "3001:3001" # TẠM THỜI expose ra host để test qua Postman.
+      # Khi có api-gateway, xoá mapping này — chỉ gateway được expose port
+      # theo đúng quy ước tại backend-architecture.md mục 1.5 & 8.4.
+    networks:
+      - freshroot-network
+    depends_on:
+      - mongo
+
+networks:
+  freshroot-network:
+    driver: bridge
+
+volumes:
+  mongo_data:
