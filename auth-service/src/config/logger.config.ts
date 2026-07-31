@@ -20,4 +20,9 @@ export const httpLogger = pinoHttp({
     'req.body.token',
     'req.body.idToken',
   ],
+  // Bỏ qua log cho static assets của Swagger UI (/docs/*), tránh spam log
+  // và tránh link bị dính trailing '"}' khi bấm từ terminal
+  autoLogging: {
+    ignore: (req) => (req.url ?? '').startsWith('/docs'),
+  },
 });
