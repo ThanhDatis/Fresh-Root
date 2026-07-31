@@ -77,14 +77,14 @@ frontend/
 │   │   │   │   ├── page.tsx
 │   │   │   │   └── _hooks/
 │   │   │   │       └── useCustomersPage.ts
-|   |   |   ├── analytics/              
+|   |   |   ├── analytics/
 │   │   |   |   ├── page.tsx
 │   │   |   |   └── _hooks/
 │   │   |   |       └── useAnalyticsPage.ts
 │   │   │   └── settings/
 │   │   │       └── page.tsx
-│   │   |   |   └── _hooks/
-│   │   |   |       └── useSetting.ts
+│   │   |       └── _hooks/
+│   │   |           └── useSetting.ts
 │   │   │
 │   │   └── (auth)/                     # Route group: Auth
 │   │       ├── layout.tsx              # Layout riêng cho login/register
@@ -105,7 +105,6 @@ frontend/
 │   │   │   └── ...
 │   │   │
 │   │   ├── shared/                     # Shared UI dùng chung toàn app
-│   │   │   ├── LoadingButton.tsx
 │   │   │   ├── ToastMessage.tsx
 │   │   │   ├── Breadcrumb.tsx
 │   │   │   ├── EmptyState.tsx
@@ -124,6 +123,11 @@ frontend/
 │   │   │   ├── CheckoutForm.tsx
 │   │   │   └── AIChatbot.tsx
 │   │   │
+│   │   ├── auth/                 # Components riêng cho form signin/signup
+│   │   │   ├── AuthLayout.tsx      # 2 cột
+│   │   │   ├── LoginForm.tsx
+│   │   │   ├── RegisterForm.tsx
+│   │   │   └── GoogleOAuthButton.tsx   # UI-only
 │   │   └── admin/                      # Components riêng cho Admin
 │   │       ├── MetricCard.tsx
 │   │       ├── RevenueChart.tsx
@@ -134,7 +138,7 @@ frontend/
 │   │
 │   ├── services/                       # Toàn bộ API calls — không gọi axios trong component
 │   │   ├── axiosInstances.ts           # Khởi tạo axios instance, interceptor token
-│   │   ├── auth.service.ts
+│   │   ├── auth.service.ts             # loginApi(), registerApi()
 │   │   ├── product.service.ts
 │   │   ├── order.service.ts
 │   │   ├── user.service.ts
@@ -158,16 +162,20 @@ frontend/
 │   │
 │   ├── constants/                      # Hằng số dùng xuyên suốt app
 │   │   ├── routes.ts                   # Path strings: '/products', '/admin/dashboard'
+│   │   ├── auth.constant.ts            # AUTH_COOKIE_KEY, AUTH_TOKEN_EXPIRY_DAYS
 │   │   └── app.constants.ts
 │   │
 │   ├── lib/                            # Utilities phức tạp / third-party wrappers
 │   │   ├── axios.ts                    # Axios config nâng cao
-│   │   └── validators.ts               # Zod schemas cho forms
+│   │   ├── cookie.ts                   # setAuthCookie/getAuthCookie/removeAuthCookie
+│   │   └── validators/
+│   │       └── auth.ts
 │   │
 │   └── utils/                          # Pure helper functions
 │       ├── currency.ts                 # formatVND()
 │       ├── dateTime.ts                 # formatDate()
-│       └── string.ts                   # slugify(), truncate()
+│       ├── string.ts                   # slugify(), truncate()
+│       └── number.ts
 │
 ├── proxy.ts                            # Middleware chặn/redirect trước khi vào root, phân quyền Admin
 ├── next.config.ts
@@ -225,16 +233,13 @@ ai-service/
 ## Giải thích cấu trúc thư mục
 
 ### public/
-
 Chứa các file tĩnh được serve trực tiếp mà không qua Next.js bundler — favicon, robots.txt, og-image. Không import vào code JS/TS.
 
 ---
 
 ### src/app/
-
 Thư mục routing chính của Next.js App Router. Mỗi folder bên trong tương ứng một URL segment.
-
-| Khái niệm                              | Ý nghĩa                                                                                         |
+|               Khái niệm                |                                            Ý nghĩa                                              |
 | -------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | `(storefront)/`, `(admin)/`, `(auth)/` | Route groups — dùng ngoặc `()` để nhóm các route có chung layout mà **không** ảnh hưởng đến URL |
 | `layout.tsx`                           | Layout bao ngoài, dùng chung cho tất cả các trang trong cùng nhóm                               |
@@ -249,14 +254,14 @@ Thư mục routing chính của Next.js App Router. Mỗi folder bên trong tư�
 ### src/components/
 
 Toàn bộ UI components, chia theo mức độ tái sử dụng:
-
-| Sub-folder    | Chứa gì                                                                                                                   |
+| Sub-folder    |                                               Chứa gì                                                                     |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------- |
 | `ui/`         | Base components xây trên MUI — Button, Input, Card, Badge, Dialog,... Không chứa business logic, chỉ nhận props và render |
 | `shared/`     | Shared components dùng chung toàn app — LoadingButton, EmptyState, Breadcrumb, ToastMessage                               |
 | `layout/`     | Các thành phần khung trang — Navbar, Footer, AdminSidebar, AdminHeader                                                    |
 | `storefront/` | Components chỉ dùng cho phần Storefront — ProductCard, CartItem, CheckoutForm, AIChatbot                                  |
 | `admin/`      | Components chỉ dùng cho Admin Dashboard — MetricCard, OrderTable, RevenueChart, ProductForm                               |
+| `auth/`       | Components dùng cho form Sign In/Sign Up                                                                                  |
 
 > **Quy tắc:** Components trong `components/` **không được** gọi API hay chứa business logic. Chỉ nhận props từ page, render UI và emit events lên trên.
 
@@ -265,16 +270,15 @@ Toàn bộ UI components, chia theo mức độ tái sử dụng:
 ### src/services/
 
 Tập trung toàn bộ HTTP calls vào một chỗ. **Không gọi axios trực tiếp trong component hay store.**
-
 - `axiosInstances.ts` — khởi tạo axios instance với `baseURL` riêng cho từng microservice, cấu hình interceptor tự động gắn Bearer token vào header
-- Mỗi `*.service.ts` — nhóm các API function theo domain, ví dụ `product.service.ts` chứa `getProducts()`, `getProductBySlug()`, `createProduct()`,...
+- Mỗi `*.service.ts` — nhóm các API function theo domain, ví dụ:
+ `product.service.ts` chứa `getProducts()`, `getProductBySlug()`, `createProduct()`,...
 
 ---
 
 ### src/stores/
 
 Zustand global state, tách theo domain để tránh re-render thừa:
-
 | Store          | Giữ gì                                                            |
 | -------------- | ----------------------------------------------------------------- |
 | `authStore.ts` | `user`, `token`, `isAuthenticated`                                |
@@ -286,9 +290,7 @@ Zustand global state, tách theo domain để tránh re-render thừa:
 ---
 
 ### src/hooks/
-
 Chỉ chứa custom hooks dùng chung ở **nhiều nơi**. Hook dùng riêng cho một trang thì đặt cạnh trang đó trong `_hooks/`.
-
 Ví dụ hooks xứng đáng ở đây: `useAuth.ts`, `useCart.ts`, `useDebounce.ts`.
 
 ---
@@ -296,7 +298,6 @@ Ví dụ hooks xứng đáng ở đây: `useAuth.ts`, `useCart.ts`, `useDebounce
 ### src/types/
 
 TypeScript interfaces và types, tách riêng theo domain. **Không viết type inline trong component** — luôn import từ đây để tái sử dụng và dễ maintain.
-
 | File               | Chứa gì                                                      |
 | ------------------ | ------------------------------------------------------------ |
 | `auth.types.ts`    | `User`, `LoginPayload`, `AuthResponse`                       |
@@ -309,7 +310,6 @@ TypeScript interfaces và types, tách riêng theo domain. **Không viết type 
 ### src/constants/
 
 Hằng số không thay đổi trong suốt vòng đời app:
-
 - `routes.ts` — centralize path strings, tránh hardcode `/admin/dashboard` rải khắp code. Khi cần đổi URL chỉ sửa một chỗ
 - `app.constants.ts` — các giá trị cố định như số sản phẩm mỗi trang, thời gian timeout,...
 
@@ -325,12 +325,12 @@ Wrappers phức tạp cho third-party hoặc browser APIs. Khác với `utils/` 
 ### src/utils/
 
 Pure helper functions — không có side effects, dễ test:
-
 | File          | Chứa gì                                   |
 | ------------- | ----------------------------------------- |
 | `currency.ts` | `formatVND()`, `formatUSD()`              |
 | `dateTime.ts` | `formatDate()`, `getRelativeTime()`       |
 | `string.ts`   | `slugify()`, `truncate()`, `capitalize()` |
+| `number.ts`   | `clamp()`, `calculatePercentage()` |
 
 ### .env.example
 
