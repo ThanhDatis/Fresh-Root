@@ -18,6 +18,10 @@ services:
       # Override MONGO_URI để trỏ vào hostname nội bộ của container mongo
       # (không dùng "localhost" vì auth-service chạy trong container riêng)
       - MONGO_URI=mongodb://mongo:27017/freshroot_auth
+      # Override NODE_ENV vì .env (dùng chung với local dev) đang để "development",
+      # nếu không ép production thì swagger-jsdoc sẽ quét ./src/routes/*.ts
+      # (không tồn tại trong image production, chỉ có ./dist) -> mất hết endpoint
+      - NODE_ENV=production
     ports:
       - "3001:3001" # TẠM THỜI expose ra host để test qua Postman.
       # Khi có api-gateway, xoá mapping này — chỉ gateway được expose port
