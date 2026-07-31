@@ -20,7 +20,7 @@ export function useLoginPage() {
     setLoading(true);
     try {
       const response = await loginApi(values);
-      login(response.data.user, response.data.token);
+      login(response.data.user, response.data.accessToken);
       showToast('Đăng nhập thành công', 'success');
       router.push('/');
     } catch (error) {

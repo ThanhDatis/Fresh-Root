@@ -19,9 +19,13 @@ export function useRegisterPage() {
   const handleSubmit = async (values: RegisterFormValues) => {
     setLoading(true);
     try {
-      const { agreeTerms: _agreeTerms, ...payload } = values;
+      const {
+        confirmPassword: _confirmPassword,
+        agreeTerms: _agreeTerms,
+        ...payload
+      } = values;
       const response = await registerApi(payload);
-      login(response.data.user, response.data.token);
+      login(response.data.user, response.data.accessToken);
       showToast('Đăng ký thành công', 'success');
       router.push('/');
     } catch (error) {
