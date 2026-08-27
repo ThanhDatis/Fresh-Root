@@ -8,6 +8,7 @@ import { env } from './config/env.config';
 import { httpLogger, logger } from './config/logger.config';
 import swaggerSpec from './config/swagger.config';
 import { errorHandler } from './middlewares/errorHandler.middleware';
+import employeeAdminRoutes from './routes/admin/employeeAdmin.route';
 import authRoutes from './routes/auth.route';
 
 async function bootstrap(): Promise<void> {
@@ -17,7 +18,7 @@ async function bootstrap(): Promise<void> {
 
   app.use(
     cors({
-      origin: env.FRONTEND_BASE_URL,
+      origin: env.ADMIN_APP_URL,
       credentials: true,
     }),
   );
@@ -30,6 +31,7 @@ async function bootstrap(): Promise<void> {
   }
 
   app.use('/auth', authRoutes);
+  app.use('/admin/employees', employeeAdminRoutes);
 
   app.use(errorHandler);
 

@@ -10,9 +10,7 @@ import type { ApiErrorResponse } from '../types/apiResponse.types';
 import {
   changePasswordSchema,
   forgotPasswordSchema,
-  googleLoginSchema,
   loginSchema,
-  registerSchema,
   resetPasswordSchema,
   updateProfileSchema,
 } from '../validations/auth.validation';
@@ -44,44 +42,10 @@ const router = Router();
 
 /**
  * @swagger
- * /auth/register:
- *   post:
- *     tags: [Auth]
- *     summary: Đăng ký tài khoản mới (local)
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/RegisterRequest'
- *     responses:
- *       201:
- *         description: Đăng ký thành công
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/AuthSuccessResponse'
- *       400:
- *         description: Dữ liệu không hợp lệ
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
- *       409:
- *         description: Email đã tồn tại
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
- */
-router.post('/register', validate(registerSchema), authController.register);
-
-/**
- * @swagger
  * /auth/login:
  *   post:
  *     tags: [Auth]
- *     summary: Đăng nhập email + password
+ *     summary: Đăng nhập username + password
  *     requestBody:
  *       required: true
  *       content:
@@ -96,13 +60,13 @@ router.post('/register', validate(registerSchema), authController.register);
  *             schema:
  *               $ref: '#/components/schemas/AuthSuccessResponse'
  *       401:
- *         description: Sai email hoặc mật khẩu
+ *         description: Sai username hoặc mật khẩu
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/ApiErrorResponse'
  *       403:
- *         description: Tài khoản đã bị khoá
+ *         description: Tài khoản đã ngừng hoạt động
  *         content:
  *           application/json:
  *             schema:
@@ -120,40 +84,6 @@ router.post(
   validate(loginSchema),
   authController.login,
 );
-
-/**
- * @swagger
- * /auth/google:
- *   post:
- *     tags: [Auth]
- *     summary: Đăng nhập/Đăng ký qua Google ID Token
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             $ref: '#/components/schemas/GoogleLoginRequest'
- *     responses:
- *       200:
- *         description: Đăng nhập bằng Google thành công
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/AuthSuccessResponse'
- *       401:
- *         description: ID Token Google không hợp lệ
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
- *       409:
- *         description: Email đã đăng ký bằng local
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ApiErrorResponse'
- */
-router.post('/google', validate(googleLoginSchema), authController.googleLogin);
 
 /**
  * @swagger
@@ -183,7 +113,7 @@ router.post('/refresh-token', parseRefreshCookie, authController.refreshToken);
  * /auth/logout:
  *   post:
  *     tags: [Auth]
- *     summary: Đăng xuất (thu hồi refresh token hiện tại, xoá cookie)
+ *     summary: Đăng xuất (xoá cookie refresh token hiện tại)
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -207,7 +137,7 @@ router.post('/logout', verifyToken, authController.logout);
  * /auth/forgot-password:
  *   post:
  *     tags: [Auth]
- *     summary: Gửi email chứa link reset mật khẩu
+ *     summary: Gửi email chứa link reset mật khẩu (chỉ hoạt động nếu nhân viên có khai báo email)
  *     requestBody:
  *       required: true
  *       content:
@@ -314,7 +244,7 @@ router.patch(
  * /auth/me:
  *   get:
  *     tags: [Auth]
- *     summary: Lấy thông tin người dùng đang đăng nhập
+ *     summary: Lấy thông tin nhân viên đang đăng nhập
  *     security:
  *       - bearerAuth: []
  *     responses:

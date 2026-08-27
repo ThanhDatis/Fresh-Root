@@ -3,7 +3,7 @@ import type { NextFunction, Request, Response } from 'express';
 import { AppError } from '../errors/AppError';
 
 export const requireRole =
-  (...roles: Array<'customer' | 'admin'>) =>
+  (...roles: Array<'admin' | 'cashier'>) =>
   (req: Request, _res: Response, next: NextFunction): void => {
     if (!req.user || !roles.includes(req.user.role)) {
       next(

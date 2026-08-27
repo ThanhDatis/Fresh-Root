@@ -6,35 +6,15 @@ import { sendSuccess } from '../utils/apiResponse';
 import type {
   ChangePasswordInput,
   ForgotPasswordInput,
-  GoogleLoginInput,
   LoginInput,
-  RegisterInput,
   ResetPasswordInput,
   UpdateProfileInput,
 } from '../validations/auth.validation';
-
-async function register(req: Request, res: Response): Promise<void> {
-  const result = await authService.register(req.body as RegisterInput);
-  tokenService.setRefreshTokenCookie(res, result.refreshToken);
-  sendSuccess(res, 201, 'Đăng ký thành công', {
-    user: result.user,
-    accessToken: result.accessToken,
-  });
-}
 
 async function login(req: Request, res: Response): Promise<void> {
   const result = await authService.login(req.body as LoginInput);
   tokenService.setRefreshTokenCookie(res, result.refreshToken);
   sendSuccess(res, 200, 'Đăng nhập thành công', {
-    user: result.user,
-    accessToken: result.accessToken,
-  });
-}
-
-async function googleLogin(req: Request, res: Response): Promise<void> {
-  const result = await authService.googleLogin(req.body as GoogleLoginInput);
-  tokenService.setRefreshTokenCookie(res, result.refreshToken);
-  sendSuccess(res, 200, 'Đăng nhập bằng Google thành công', {
     user: result.user,
     accessToken: result.accessToken,
   });
@@ -90,9 +70,7 @@ async function updateProfile(req: Request, res: Response): Promise<void> {
 }
 
 export const authController = {
-  register,
   login,
-  googleLogin,
   refreshToken,
   logout,
   forgotPassword,
