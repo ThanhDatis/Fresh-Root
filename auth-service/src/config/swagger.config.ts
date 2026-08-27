@@ -3,20 +3,26 @@ import swaggerJSDoc from 'swagger-jsdoc';
 import { env } from './env.config';
 
 const apiGlob =
-  env.NODE_ENV === 'production' ? './dist/routes/*.js' : './src/routes/*.ts';
+  env.NODE_ENV === 'production'
+    ? './dist/routes/**/*.js'
+    : './src/routes/**/*.ts';
 
 const swaggerSpec = swaggerJSDoc({
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'FreshRoot Auth Service API',
+      title: 'FreshRoot POS — Auth Service API',
       version: '1.0.0',
       description:
-        'API documentation cho auth-service (đăng ký, đăng nhập, JWT, quản lý profile...)',
+        'API documentation cho auth-service (đăng nhập nhân viên, JWT, quản lý tài khoản Nhân viên...)',
     },
     servers: [{ url: `http://localhost:${env.PORT}` }],
     tags: [
-      { name: 'Auth', description: 'Đăng ký / đăng nhập / JWT / profile' },
+      { name: 'Auth', description: 'Đăng nhập / JWT / profile nhân viên' },
+      {
+        name: 'Employee Admin',
+        description: 'Quản lý tài khoản Nhân viên — chỉ Admin',
+      },
     ],
     components: {
       securitySchemes: {
@@ -27,39 +33,23 @@ const swaggerSpec = swaggerJSDoc({
         },
       },
       schemas: {
-        RegisterRequest: {
-          type: 'object',
-          required: ['fullName', 'email', 'password'],
-          properties: {
-            fullName: { type: 'string', minLength: 2, example: 'Nguyen Van A' },
-            email: { type: 'string', format: 'email', example: 'a@test.com' },
-            password: { type: 'string', minLength: 8, example: 'password123' },
-          },
-        },
         LoginRequest: {
           type: 'object',
-          required: ['email', 'password'],
+          required: ['username', 'password'],
           properties: {
-            email: { type: 'string', format: 'email', example: 'a@test.com' },
-            password: { type: 'string', example: 'password123' },
-          },
-        },
-        GoogleLoginRequest: {
-          type: 'object',
-          required: ['idToken'],
-          properties: {
-            idToken: {
-              type: 'string',
-              description:
-                'Google ID Token lấy từ FE (Google Identity Services)',
-            },
+            username: { type: 'string', example: 'admin' },
+            password: { type: 'string', example: 'Admin@123' },
           },
         },
         ForgotPasswordRequest: {
           type: 'object',
           required: ['email'],
           properties: {
-            email: { type: 'string', format: 'email', example: 'a@test.com' },
+            email: {
+              type: 'string',
+              format: 'email',
+              example: 'nhanvien@freshroot.vn',
+            },
           },
         },
         ResetPasswordRequest: {
@@ -90,18 +80,54 @@ const swaggerSpec = swaggerJSDoc({
             avatar: { type: 'string', format: 'uri' },
           },
         },
-        SafeUser: {
+        CreateEmployeeRequest: {
+          type: 'object',
+          required: ['fullName', 'username', 'password', 'role'],
+          properties: {
+            fullName: { type: 'string', minLength: 2, example: 'Nguyễn Văn A' },
+            username: { type: 'string', minLength: 3, example: 'nva' },
+            password: { type: 'string', minLength: 8, example: 'password123' },
+            role: { type: 'string', enum: ['admin', 'cashier'] },
+            email: { type: 'string', format: 'email' },
+            phone: { type: 'string' },
+            startDate: { type: 'string', format: 'date' },
+            baseSalary: { type: 'number', minimum: 0 },
+          },
+        },
+        UpdateEmployeeRequest: {
+          type: 'object',
+          description: 'Không cho sửa username',
+          properties: {
+            fullName: { type: 'string', minLength: 2 },
+            phone: { type: 'string' },
+            email: { type: 'string', format: 'email' },
+            avatar: { type: 'string', format: 'uri' },
+            role: { type: 'string', enum: ['admin', 'cashier'] },
+            startDate: { type: 'string', format: 'date' },
+            baseSalary: { type: 'number', minimum: 0 },
+          },
+        },
+        UpdateEmploymentStatusRequest: {
+          type: 'object',
+          required: ['employmentStatus'],
+          properties: {
+            employmentStatus: { type: 'string', enum: ['active', 'resigned'] },
+          },
+        },
+        SafeEmployee: {
           type: 'object',
           properties: {
             id: { type: 'string' },
+            employeeCode: { type: 'string', example: 'NV0001' },
             fullName: { type: 'string' },
+            username: { type: 'string' },
             email: { type: 'string' },
             phone: { type: 'string' },
             avatar: { type: 'string' },
-            role: { type: 'string', enum: ['customer', 'admin'] },
-            authProvider: { type: 'string', enum: ['local', 'google'] },
-            isActive: { type: 'boolean' },
-            emailVerified: { type: 'boolean' },
+            role: { type: 'string', enum: ['admin', 'cashier'] },
+            employmentStatus: { type: 'string', enum: ['active', 'resigned'] },
+            startDate: { type: 'string', format: 'date-time' },
+            baseSalary: { type: 'number' },
             createdAt: { type: 'string', format: 'date-time' },
             updatedAt: { type: 'string', format: 'date-time' },
           },
@@ -114,7 +140,7 @@ const swaggerSpec = swaggerJSDoc({
             data: {
               type: 'object',
               properties: {
-                user: { $ref: '#/components/schemas/SafeUser' },
+                user: { $ref: '#/components/schemas/SafeEmployee' },
                 accessToken: { type: 'string' },
               },
             },
@@ -141,7 +167,40 @@ const swaggerSpec = swaggerJSDoc({
             data: {
               type: 'object',
               properties: {
-                user: { $ref: '#/components/schemas/SafeUser' },
+                user: { $ref: '#/components/schemas/SafeEmployee' },
+              },
+            },
+          },
+        },
+        EmployeeResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            message: { type: 'string' },
+            data: {
+              type: 'object',
+              properties: {
+                employee: { $ref: '#/components/schemas/SafeEmployee' },
+              },
+            },
+          },
+        },
+        EmployeeListResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean', example: true },
+            message: { type: 'string' },
+            data: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/SafeEmployee' },
+            },
+            pagination: {
+              type: 'object',
+              properties: {
+                page: { type: 'integer' },
+                limit: { type: 'integer' },
+                totalItems: { type: 'integer' },
+                totalPages: { type: 'integer' },
               },
             },
           },
