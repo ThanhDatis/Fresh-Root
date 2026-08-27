@@ -13,24 +13,26 @@ const envSchema = z.object({
   SWAGGER_ENABLED: z.coerce.boolean().default(true),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('debug'),
 
-  // JWT (auth-service.md mục 5, 8)
+  // JWT (auth-service.md mục 3, 8)
   JWT_ACCESS_SECRET: z.string().min(1, 'JWT_ACCESS_SECRET is required'),
   JWT_REFRESH_SECRET: z.string().min(1, 'JWT_REFRESH_SECRET is required'),
   JWT_ACCESS_EXPIRY: z.string().default('15m'),
   JWT_REFRESH_EXPIRY: z.string().default('7d'),
 
-  // Google OAuth (auth-service.md mục 4.3)
-  GOOGLE_CLIENT_ID: z.string().min(1, 'GOOGLE_CLIENT_ID is required'),
-
-  // Frontend & Reset Password (auth-service.md mục 4.6)
-  FRONTEND_BASE_URL: z.string().min(1).default('http://localhost:3000'),
+  // Admin Web & Reset Password (auth-service.md mục 5.5, 8)
+  ADMIN_APP_URL: z.string().min(1).default('http://localhost:3000'),
   RESET_PASSWORD_TOKEN_EXPIRY_MINUTES: z.coerce.number().default(15),
 
-  // SMTP / Nodemailer (auth-service.md mục 8)
-  SMTP_HOST: z.string().min(1, 'SMTP_HOST is required'),
-  SMTP_PORT: z.coerce.number(),
-  SMTP_USER: z.string().min(1, 'SMTP_USER is required'),
-  SMTP_PASS: z.string().min(1, 'SMTP_PASS is required'),
+  // SMTP / Nodemailer — optional, chỉ cần khi dùng forgot-password (auth-service.md mục 8)
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.coerce.number().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+
+  // Seed Admin đầu tiên — chỉ dùng bởi `npm run seed:admin`, KHÔNG bắt buộc cho server chính
+  // (có thể xoá khỏi .env sau khi seed xong, nên phải optional ở đây)
+  SEED_ADMIN_USERNAME: z.string().optional(),
+  SEED_ADMIN_PASSWORD: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

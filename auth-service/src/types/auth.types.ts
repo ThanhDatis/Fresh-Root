@@ -1,6 +1,6 @@
 export interface AccessTokenPayload {
   userId: string;
-  role: 'customer' | 'admin';
+  role: 'admin' | 'cashier';
 }
 
 export interface RefreshTokenPayload {
@@ -8,17 +8,19 @@ export interface RefreshTokenPayload {
   tokenVersion: number;
 }
 
-// Hình dạng user trả về cho client — không bao giờ chứa password/resetPasswordTokenHash
-export interface SafeUser {
+// Hình dạng employee trả về cho client — không bao giờ chứa password/resetPasswordTokenHash
+export interface SafeEmployee {
   id: string;
+  employeeCode: string;
   fullName: string;
-  email: string;
+  username: string;
+  email?: string;
   phone?: string;
   avatar?: string;
-  role: 'customer' | 'admin';
-  authProvider: 'local' | 'google';
-  isActive: boolean;
-  emailVerified: boolean;
+  role: 'admin' | 'cashier';
+  employmentStatus: 'active' | 'resigned';
+  startDate?: Date;
+  baseSalary?: number;
   createdAt: Date;
   updatedAt: Date;
 }
