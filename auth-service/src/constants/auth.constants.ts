@@ -5,3 +5,6 @@ export const REFRESH_TOKEN_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 ng√
 export const RESET_TOKEN_BYTE_LENGTH = 32;
 
 export const BCRYPT_SALT_ROUNDS = 10;
+
+export const EMPLOYEE_CODE_PREFIX = 'NV';
+export const EMPLOYEE_CODE_PAD_LENGTH = 4;
