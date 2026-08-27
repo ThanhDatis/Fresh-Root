@@ -1,22 +1,10 @@
 import { z } from 'zod';
 
-export const registerSchema = z.object({
-  fullName: z.string().min(2, 'Họ tên phải có ít nhất 2 ký tự'),
-  email: z.email('Email không hợp lệ'),
-  password: z.string().min(8, 'Password phải có ít nhất 8 ký tự'),
-});
-export type RegisterInput = z.infer<typeof registerSchema>;
-
 export const loginSchema = z.object({
-  email: z.email('Email không hợp lệ'),
+  username: z.string().min(1, 'Username không được để trống'),
   password: z.string().min(1, 'Password không được để trống'),
 });
 export type LoginInput = z.infer<typeof loginSchema>;
-
-export const googleLoginSchema = z.object({
-  idToken: z.string().min(1, 'idToken không được để trống'),
-});
-export type GoogleLoginInput = z.infer<typeof googleLoginSchema>;
 
 export const forgotPasswordSchema = z.object({
   email: z.email('Email không hợp lệ'),

@@ -1,189 +1,93 @@
-import { OAuth2Client } from 'google-auth-library';
-
-import { env } from '../config/env.config';
 import { AppError } from '../errors/AppError';
-import type { IUser } from '../models/user.model';
 import {
-  userRepository,
-  type UserDocument,
-} from '../repositories/user.repository';
-import type { SafeUser } from '../types/auth.types';
+  employeeRepository,
+  type EmployeeDocument,
+} from '../repositories/employee.repository';
+import { env } from '../config/env.config';
+import type { SafeEmployee } from '../types/auth.types';
 import { comparePassword, hashPassword } from '../utils/hash';
+import { toSafeEmployee } from '../utils/employeeMapper';
 import { generateRawResetToken, hashResetToken } from '../utils/resetToken';
 import type {
   ChangePasswordInput,
   ForgotPasswordInput,
-  GoogleLoginInput,
   LoginInput,
-  RegisterInput,
   ResetPasswordInput,
   UpdateProfileInput,
 } from '../validations/auth.validation';
 import { mailService } from './mail.service';
 import { tokenService } from './token.service';
 
-const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
-
-function toSafeUser(user: UserDocument): SafeUser {
-  return {
-    id: user._id.toString(),
-    fullName: user.fullName,
-    email: user.email,
-    ...(user.phone !== undefined ? { phone: user.phone } : {}),
-    ...(user.avatar !== undefined ? { avatar: user.avatar } : {}),
-    role: user.role,
-    authProvider: user.authProvider,
-    isActive: user.isActive,
-    emailVerified: user.emailVerified,
-    createdAt: user.createdAt,
-    updatedAt: user.updatedAt,
-  };
-}
-
-function issueTokens(user: UserDocument): {
+function issueTokens(employee: EmployeeDocument): {
   accessToken: string;
   refreshToken: string;
 } {
   const accessToken = tokenService.generateAccessToken({
-    userId: user._id.toString(),
-    role: user.role,
+    userId: employee._id.toString(),
+    role: employee.role,
   });
   const refreshToken = tokenService.generateRefreshToken({
-    userId: user._id.toString(),
-    tokenVersion: user.refreshTokenVersion,
+    userId: employee._id.toString(),
+    tokenVersion: employee.refreshTokenVersion,
   });
   return { accessToken, refreshToken };
 }
 
 interface AuthResult {
-  user: SafeUser;
+  user: SafeEmployee;
   accessToken: string;
   refreshToken: string;
 }
 
-// 4.1. Register
-async function register(input: RegisterInput): Promise<AuthResult> {
-  const existing = await userRepository.findByEmail(input.email);
-  if (existing) {
-    throw new AppError(
-      409,
-      'Email đã được đăng ký',
-      'AUTH_EMAIL_ALREADY_EXISTS',
-    );
-  }
-
-  const hashedPassword = await hashPassword(input.password);
-
-  const user = await userRepository.create({
-    fullName: input.fullName,
-    email: input.email,
-    password: hashedPassword,
-    authProvider: 'local',
-    role: 'customer',
-  });
-
-  const { accessToken, refreshToken } = issueTokens(user);
-
-  return { user: toSafeUser(user), accessToken, refreshToken };
-}
-
-// 4.2. Login
+// 5.2. Login
 async function login(input: LoginInput): Promise<AuthResult> {
-  const user = await userRepository.findByEmail(input.email, true);
+  const employee = await employeeRepository.findByUsername(
+    input.username,
+    true,
+  );
 
-  if (!user || user.authProvider !== 'local' || !user.password) {
+  if (!employee) {
     throw new AppError(
       401,
-      'Sai email hoặc mật khẩu',
+      'Sai username hoặc mật khẩu',
       'AUTH_INVALID_CREDENTIALS',
     );
   }
 
-  const isMatch = await comparePassword(input.password, user.password);
+  const isMatch = await comparePassword(input.password, employee.password);
   if (!isMatch) {
     throw new AppError(
       401,
-      'Sai email hoặc mật khẩu',
+      'Sai username hoặc mật khẩu',
       'AUTH_INVALID_CREDENTIALS',
     );
   }
 
-  if (!user.isActive) {
-    throw new AppError(403, 'Tài khoản đã bị khoá', 'AUTH_ACCOUNT_BLOCKED');
-  }
-
-  const { accessToken, refreshToken } = issueTokens(user);
-
-  return { user: toSafeUser(user), accessToken, refreshToken };
-}
-
-// 4.3. Google Login
-async function googleLogin(input: GoogleLoginInput): Promise<AuthResult> {
-  let payload;
-  try {
-    const ticket = await googleClient.verifyIdToken({
-      idToken: input.idToken,
-      audience: env.GOOGLE_CLIENT_ID,
-    });
-    payload = ticket.getPayload();
-  } catch {
+  if (employee.employmentStatus === 'resigned') {
     throw new AppError(
-      401,
-      'ID Token Google không hợp lệ',
-      'AUTH_GOOGLE_TOKEN_INVALID',
+      403,
+      'Tài khoản đã ngừng hoạt động',
+      'AUTH_ACCOUNT_RESIGNED',
     );
   }
 
-  if (!payload?.email || !payload.sub) {
-    throw new AppError(
-      401,
-      'ID Token Google không hợp lệ',
-      'AUTH_GOOGLE_TOKEN_INVALID',
-    );
-  }
+  const { accessToken, refreshToken } = issueTokens(employee);
 
-  let user = await userRepository.findByGoogleId(payload.sub);
-
-  if (!user) {
-    const existingLocalUser = await userRepository.findByEmail(payload.email);
-    if (existingLocalUser) {
-      throw new AppError(
-        409,
-        'Email này đã đăng ký bằng mật khẩu, vui lòng đăng nhập bằng email/password',
-        'AUTH_EMAIL_REGISTERED_WITH_LOCAL',
-      );
-    }
-
-    const createData: Partial<IUser> = {
-      authProvider: 'google',
-      googleId: payload.sub,
-      fullName: payload.name ?? payload.email,
-      email: payload.email,
-      role: 'customer',
-      emailVerified: payload.email_verified ?? false,
-      ...(payload.picture !== undefined ? { avatar: payload.picture } : {}),
-    };
-
-    user = await userRepository.create(createData);
-  }
-
-  const { accessToken, refreshToken } = issueTokens(user);
-
-  return { user: toSafeUser(user), accessToken, refreshToken };
+  return { user: toSafeEmployee(employee), accessToken, refreshToken };
 }
 
-// 4.4. Refresh Token
+// 5.3. Refresh Token
 async function refreshToken(
   rawRefreshToken: string,
 ): Promise<{ accessToken: string; refreshToken: string }> {
   const payload = tokenService.verifyRefreshToken(rawRefreshToken);
 
-  const user = await userRepository.findById(payload.userId);
-  if (!user) {
+  const employee = await employeeRepository.findById(payload.userId);
+  if (!employee) {
     throw new AppError(404, 'Không tìm thấy người dùng', 'AUTH_USER_NOT_FOUND');
   }
 
-  if (user.refreshTokenVersion !== payload.tokenVersion) {
+  if (employee.refreshTokenVersion !== payload.tokenVersion) {
     throw new AppError(
       401,
       'Refresh token đã bị thu hồi',
@@ -191,14 +95,14 @@ async function refreshToken(
     );
   }
 
-  return issueTokens(user);
+  return issueTokens(employee);
 }
 
-// 4.6. Forgot Password
+// 5.5. Forgot Password
 async function forgotPassword(input: ForgotPasswordInput): Promise<void> {
-  const user = await userRepository.findByEmail(input.email);
+  const employee = await employeeRepository.findByEmail(input.email);
 
-  if (!user) {
+  if (!employee) {
     return;
   }
 
@@ -208,19 +112,22 @@ async function forgotPassword(input: ForgotPasswordInput): Promise<void> {
     Date.now() + env.RESET_PASSWORD_TOKEN_EXPIRY_MINUTES * 60 * 1000,
   );
 
-  await userRepository.updateById(user._id, {
+  await employeeRepository.updateById(employee._id, {
     resetPasswordTokenHash: tokenHash,
     resetPasswordExpires: expiresAt,
   });
 
-  await mailService.sendResetPasswordEmail(user.email, rawToken);
+  await mailService.sendResetPasswordEmail(
+    employee.email ?? input.email,
+    rawToken,
+  );
 }
 
-// 4.7. Reset Password
+// 5.6. Reset Password
 async function resetPassword(input: ResetPasswordInput): Promise<void> {
-  const user = await userRepository.findByEmail(input.email);
+  const employee = await employeeRepository.findByEmail(input.email);
 
-  if (!user) {
+  if (!employee) {
     throw new AppError(
       400,
       'Link đặt lại mật khẩu không hợp lệ hoặc đã hết hạn',
@@ -230,9 +137,9 @@ async function resetPassword(input: ResetPasswordInput): Promise<void> {
 
   const tokenHash = hashResetToken(input.token);
   const isTokenValid =
-    user.resetPasswordTokenHash === tokenHash &&
-    user.resetPasswordExpires !== undefined &&
-    user.resetPasswordExpires.getTime() > Date.now();
+    employee.resetPasswordTokenHash === tokenHash &&
+    employee.resetPasswordExpires !== undefined &&
+    employee.resetPasswordExpires.getTime() > Date.now();
 
   if (!isTokenValid) {
     throw new AppError(
@@ -244,25 +151,25 @@ async function resetPassword(input: ResetPasswordInput): Promise<void> {
 
   const hashedPassword = await hashPassword(input.newPassword);
 
-  await userRepository.updateById(user._id, { password: hashedPassword });
-  await userRepository.clearResetPasswordToken(user._id);
-  await userRepository.incrementRefreshTokenVersion(user._id);
+  await employeeRepository.updateById(employee._id, {
+    password: hashedPassword,
+  });
+  await employeeRepository.clearResetPasswordToken(employee._id);
+  await employeeRepository.incrementRefreshTokenVersion(employee._id);
 }
 
-// 4.8. Change Password
+// 5.7. Change Password
 async function changePassword(
   userId: string,
   input: ChangePasswordInput,
 ): Promise<void> {
-  const user = await userRepository.findById(userId, true);
+  const employee = await employeeRepository.findById(userId, true);
 
-  if (!user) {
+  if (!employee) {
     throw new AppError(404, 'Không tìm thấy người dùng', 'AUTH_USER_NOT_FOUND');
   }
 
-  const isMatch = user.password
-    ? await comparePassword(input.oldPassword, user.password)
-    : false;
+  const isMatch = await comparePassword(input.oldPassword, employee.password);
   if (!isMatch) {
     throw new AppError(
       401,
@@ -273,43 +180,43 @@ async function changePassword(
 
   const hashedPassword = await hashPassword(input.newPassword);
 
-  await userRepository.updateById(user._id, { password: hashedPassword });
-  await userRepository.incrementRefreshTokenVersion(user._id);
+  await employeeRepository.updateById(employee._id, {
+    password: hashedPassword,
+  });
+  await employeeRepository.incrementRefreshTokenVersion(employee._id);
 }
 
-// 4.9. Update Profile
+// 5.8. Update Profile
 async function updateProfile(
   userId: string,
   input: UpdateProfileInput,
-): Promise<SafeUser> {
-  const update: Partial<IUser> = {
+): Promise<SafeEmployee> {
+  const update = {
     ...(input.fullName !== undefined ? { fullName: input.fullName } : {}),
     ...(input.phone !== undefined ? { phone: input.phone } : {}),
     ...(input.avatar !== undefined ? { avatar: input.avatar } : {}),
   };
 
-  const user = await userRepository.updateById(userId, update);
-  if (!user) {
+  const employee = await employeeRepository.updateById(userId, update);
+  if (!employee) {
     throw new AppError(404, 'Không tìm thấy người dùng', 'AUTH_USER_NOT_FOUND');
   }
 
-  return toSafeUser(user);
+  return toSafeEmployee(employee);
 }
 
 // GET /auth/me
-async function getMe(userId: string): Promise<SafeUser> {
-  const user = await userRepository.findById(userId);
-  if (!user) {
+async function getMe(userId: string): Promise<SafeEmployee> {
+  const employee = await employeeRepository.findById(userId);
+  if (!employee) {
     throw new AppError(404, 'Không tìm thấy người dùng', 'AUTH_USER_NOT_FOUND');
   }
 
-  return toSafeUser(user);
+  return toSafeEmployee(employee);
 }
 
 export const authService = {
-  register,
   login,
-  googleLogin,
   refreshToken,
   forgotPassword,
   resetPassword,

@@ -1,6 +1,10 @@
 import type { Response } from 'express';
 
-import type { ApiSuccessResponse } from '../types/apiResponse.types';
+import type {
+  ApiPaginatedResponse,
+  ApiSuccessResponse,
+  Pagination,
+} from '../types/apiResponse.types';
 
 export function sendSuccess<T>(
   res: Response,
@@ -10,4 +14,19 @@ export function sendSuccess<T>(
 ): void {
   const body: ApiSuccessResponse<T> = { success: true, message, data };
   res.status(statusCode).json(body);
+}
+
+export function sendPaginated<T>(
+  res: Response,
+  message: string,
+  data: T[],
+  pagination: Pagination,
+): void {
+  const body: ApiPaginatedResponse<T> = {
+    success: true,
+    message,
+    data,
+    pagination,
+  };
+  res.status(200).json(body);
 }
