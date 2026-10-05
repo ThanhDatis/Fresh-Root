@@ -1,32 +1,28 @@
 import type { ApiResponse } from './api.types';
 
-export interface User {
+export interface Employee {
   id: string;
+  employeeCode: string;
   fullName: string;
-  email: string;
+  username: string;
+  email?: string;
   phone?: string;
   avatar?: string;
-  role: 'customer' | 'admin';
-  authProvider: 'local' | 'google';
-  isActive: boolean;
-  emailVerified: boolean;
+  role: 'admin' | 'cashier';
+  employmentStatus: 'active' | 'resigned';
+  startDate?: string;
+  baseSalary?: number;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface LoginPayload {
-  email: string;
-  password: string;
-}
-
-export interface RegisterPayload {
-  fullName: string;
-  email: string;
+  username: string;
   password: string;
 }
 
 export interface AuthData {
-  user: User;
+  user: Employee;
   accessToken: string;
 }
 
