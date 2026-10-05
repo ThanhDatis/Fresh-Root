@@ -2,20 +2,15 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import NextLink from 'next/link';
 import { Controller, useForm } from 'react-hook-form';
 
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { sage } from '@/constants/colors';
-import { ROUTES } from '@/constants/routes';
 import { loginSchema, type LoginFormValues } from '@/lib/validators/auth';
-
-import GoogleOAuthButton from './GoogleOAuthButton';
 
 interface LoginFormProps {
   loading?: boolean;
@@ -29,7 +24,7 @@ export default function LoginForm({
   const { control, handleSubmit } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     mode: 'onChange',
-    defaultValues: { email: '', password: '' },
+    defaultValues: { username: '', password: '' },
   });
 
   return (
@@ -41,15 +36,14 @@ export default function LoginForm({
         Sign in
       </Typography>
 
-      <Stack spacing={2.5}>
+      <Stack spacing={2}>
         <Controller
-          name="email"
+          name="username"
           control={control}
           render={({ field, fieldState }) => (
             <Input
               {...field}
-              label="Email"
-              typeInput="email"
+              label="Username"
               isError={!!fieldState.error}
               errorText={fieldState.error?.message}
             />
@@ -88,30 +82,6 @@ export default function LoginForm({
           Sign in
         </Button>
       </Stack>
-
-      <Divider sx={{ my: 3 }}>or</Divider>
-
-      <GoogleOAuthButton />
-
-      <Typography
-        variant="body2"
-        sx={{ textAlign: 'center', mt: 3, color: 'text.secondary' }}
-      >
-        Don&apos;t have an account?{' '}
-        <Link
-          component={NextLink}
-          href={ROUTES.REGISTER}
-          underline="hover"
-          sx={{
-            fontWeight: 600,
-            color: sage[700],
-            transition: 'color 0.2s ease',
-            '&:hover': { color: sage[900] },
-          }}
-        >
-          Sign up
-        </Link>
-      </Typography>
     </Box>
   );
 }

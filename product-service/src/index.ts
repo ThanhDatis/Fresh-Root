@@ -17,7 +17,7 @@ async function bootstrap(): Promise<void> {
 
   const app = express();
 
-  app.use(cors());
+  app.use(cors({ origin: env.ADMIN_APP_URL, credentials: true }));
   app.use(express.json());
   app.use(httpLogger);
 

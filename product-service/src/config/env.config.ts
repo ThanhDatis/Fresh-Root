@@ -11,6 +11,8 @@ const envSchema = z.object({
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('debug'),
 
   JWT_ACCESS_SECRET: z.string().min(1, 'JWT_ACCESS_SECRET is required'),
+
+  ADMIN_APP_URL: z.string().min(1).default('http://localhost:3000'),
 });
 
 const parsed = envSchema.safeParse(process.env);
