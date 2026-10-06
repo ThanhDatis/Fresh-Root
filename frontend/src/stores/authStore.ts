@@ -1,13 +1,13 @@
 import { create } from 'zustand';
 
 import { getAuthCookie, removeAuthCookie, setAuthCookie } from '@/lib/cookie';
-import type { User } from '@/types/auth.types';
+import type { Employee } from '@/types/auth.types';
 
 interface AuthStore {
-  user: User | null;
+  user: Employee | null;
   token: string | null;
   isAuthenticated: boolean;
-  login: (user: User, token: string) => void;
+  login: (user: Employee, token: string) => void;
   setAccessToken: (token: string) => void;
   logout: () => void;
 }

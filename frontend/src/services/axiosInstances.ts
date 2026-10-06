@@ -71,3 +71,7 @@ function createAxiosInstance(baseURL?: string) {
 export const authApi = createAxiosInstance(
   process.env.NEXT_PUBLIC_AUTH_API_URL,
 );
+
+export const productApi = createAxiosInstance(
+  process.env.NEXT_PUBLIC_PRODUCT_API_URL,
+);
