@@ -143,6 +143,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           // borderRadius: 8,
+          gap: 5,
           backgroundColor: inputBackground,
           '& .MuiOutlinedInput-notchedOutline': {
             borderColor: borderLine,
