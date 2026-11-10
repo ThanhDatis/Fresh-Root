@@ -25,6 +25,7 @@ function issueTokens(employee: EmployeeDocument): {
   const accessToken = tokenService.generateAccessToken({
     userId: employee._id.toString(),
     role: employee.role,
+    fullName: employee.fullName,
   });
   const refreshToken = tokenService.generateRefreshToken({
     userId: employee._id.toString(),

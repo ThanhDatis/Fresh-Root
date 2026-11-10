@@ -24,7 +24,11 @@ export function verifyToken(
       token,
       env.JWT_ACCESS_SECRET,
     ) as AccessTokenPayload;
-    req.user = { userId: payload.userId, role: payload.role };
+    req.user = {
+      userId: payload.userId,
+      role: payload.role,
+      fullName: payload.fullName,
+    };
     next();
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {

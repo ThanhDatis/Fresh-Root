@@ -6,6 +6,7 @@ declare global {
       user?: {
         userId: string;
         role: 'admin' | 'cashier';
+        fullName?: string | undefined;
       };
       refreshToken?: string;
     }

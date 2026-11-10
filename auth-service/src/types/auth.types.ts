@@ -1,6 +1,7 @@
 export interface AccessTokenPayload {
   userId: string;
   role: 'admin' | 'cashier';
+  fullName?: string;
 }
 
 export interface RefreshTokenPayload {
