@@ -38,6 +38,19 @@ export type CustomerGroup = (typeof CUSTOMER_GROUPS)[number];
 export const CUSTOMER_STATUSES = ['active', 'blocked'] as const;
 export type CustomerStatus = (typeof CUSTOMER_STATUSES)[number];
 
+// Dấu "-" phía trước = giảm dần
+export const CUSTOMER_SORTS = [
+  '-createdAt',
+  'createdAt',
+  'name',
+  '-name',
+  'totalSpent',
+  '-totalSpent',
+  'lastPurchaseAt',
+  '-lastPurchaseAt',
+] as const;
+export type CustomerSort = (typeof CUSTOMER_SORTS)[number];
+
 // ---------- Mã tự sinh (HD0001, TH0001, KH0001) ----------
 export const CODE_PREFIXES = {
   order: 'HD',

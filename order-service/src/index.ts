@@ -8,8 +8,7 @@ import { httpLogger, logger } from './config/logger.config';
 import swaggerSpec from './config/swagger.config';
 import { AppError } from './errors/AppError';
 import { errorHandler } from './middlewares/errorHandler.middleware';
-import { verifyToken } from './middlewares/verifyToken.middleware';
-import { sendSuccess } from './utils/apiResponse';
+import customerRoutes from './routes/customer.route';
 
 async function bootstrap(): Promise<void> {
   await connectDB();
@@ -28,10 +27,7 @@ async function bootstrap(): Promise<void> {
     res.status(200).json({ success: true, message: 'OK', data: null });
   });
 
-  // TẠM THỜI (Phase 0): kiểm tra verifyToken đọc đúng userId/role/fullName — xóa khi có route thật ở Phase 2
-  app.get('/debug/whoami', verifyToken, (req, res) => {
-    sendSuccess(res, 200, 'OK', req.user);
-  });
+  app.use('/customers', customerRoutes);
 
   app.use((_req, _res, next) => {
     next(new AppError(404, 'Không tìm thấy endpoint', 'ROUTE_NOT_FOUND'));
